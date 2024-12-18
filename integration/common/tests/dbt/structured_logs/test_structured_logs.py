@@ -110,6 +110,22 @@ def patch_get_dbt_profiles_dir(monkeypatch):
             "./tests/dbt/structured_logs/snowflake/snapshot/results/snapshot_ol_events.json",
             "./tests/dbt/structured_logs/snowflake/snapshot/target/manifest.json",
         ),
+        # postgres test
+        (
+            "postgres",
+            ["dbt", "test", "..."],
+            "./tests/dbt/structured_logs/postgres/test/logs/test_logs.jsonl",
+            "./tests/dbt/structured_logs/postgres/test/results/test_ol_events.json",
+            "./tests/dbt/structured_logs/postgres/test/target/manifest.json",
+        ),
+        # postgres build
+        (
+            "postgres",
+            ["dbt", "build", "..."],
+            "./tests/dbt/structured_logs/postgres/build_command/logs/build_logs.jsonl",
+            "./tests/dbt/structured_logs/postgres/build_command/results/build_ol_events.json",
+            "./tests/dbt/structured_logs/postgres/build_command/target/manifest.json",
+        )
     ],
     ids=[
         # run command
@@ -123,6 +139,10 @@ def patch_get_dbt_profiles_dir(monkeypatch):
         # snapshot command
         "postgres_dbt_snapshot",
         "snowflake_dbt_snapshot",
+        # test command
+        "postgres_dbt_test",
+        # build command
+        "postgres_dbt_build"
     ],
 )
 def test_parse(target, command_line, logs_path, expected_ol_events_path, manifest_path, monkeypatch):
@@ -146,6 +166,12 @@ def test_parse(target, command_line, logs_path, expected_ol_events_path, manifes
 
     actual_ol_events = list(ol_event_to_dict(event) for event in processor.parse())
     expected_ol_events = json.load(open(expected_ol_events_path))
+
+
+    with open("foo.json", "w") as f:
+        json.dump(actual_ol_events, f)
+
+
 
     assert match(expected=expected_ol_events, result=actual_ol_events)
 

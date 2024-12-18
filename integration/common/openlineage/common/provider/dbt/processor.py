@@ -326,6 +326,7 @@ class DbtArtifactProcessor:
         started_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
         completed_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
 
+        # node_id -> List[Assertions]
         assertions = self.parse_assertions(context, nodes)
 
         events = DbtEvents()
@@ -389,15 +390,15 @@ class DbtArtifactProcessor:
         for run in context.run_results["results"]:
             if not run["unique_id"].startswith("test."):
                 continue
-            test_node = nodes[run["unique_id"]]
+            test_node = nodes[run["unique_id"]] #the manifest node of the test
 
             model_node = None
             for node in context.manifest["parent_map"][run["unique_id"]]:
                 if node.startswith("model.") or node.startswith("source."):
-                    model_node = node
+                    model_node = node # get the last model/source node the test is related to
 
             if self.manifest_version >= 12:  # type: ignore
-                name = test_node["name"]
+                name = test_node["name"] #getting the test name
                 node_columns = test_node
 
             else:
